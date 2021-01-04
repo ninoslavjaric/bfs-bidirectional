@@ -3,10 +3,14 @@ namespace Htec\Controller;
 
 use Htec\Controller;
 use Htec\Core\JsonResponse;
+use Htec\Exception\InvalidParamsException;
 use Htec\Service\User;
+use Htec\Traits\Service\UserServiceTrait;
 
 final class AuthController extends Controller
 {
+    use UserServiceTrait;
+
     static public function getEndpointAccessScope(): array
     {
         return [
@@ -18,8 +22,10 @@ final class AuthController extends Controller
     public function postRegisterAction(): JsonResponse
     {
         try {
-            User::getInstance()->register($this->request->getParams());
+            $this->getUserService()->register($this->request->getParams());
             return $this->getSuccessResponse('Registration successful');
+        } catch (InvalidParamsException $e) {
+            return $this->getErrorResponse($e->getMessage());
         } catch (\Exception $e) {
             return $this->getErrorResponse('Registration failed');
         }
@@ -28,8 +34,10 @@ final class AuthController extends Controller
     public function postIndexAction(): JsonResponse
     {
         try {
-            $token = User::getInstance()->authenticate($this->request->getParams());
+            $token = $this->getUserService()->authenticate($this->request->getParams());
             return $this->getSuccessResponse('Token generated', ['token' => $token]);
+        } catch (InvalidParamsException $e) {
+            return $this->getErrorResponse($e->getMessage());
         } catch (\Exception $e) {
             return $this->getErrorResponse("Something's wrong");
         }

@@ -4,7 +4,7 @@ namespace Htec\Mapper;
 use Htec\Core\Validator;
 use Htec\Mapper;
 
-final class Route extends Mapper
+class Route extends Mapper
 {
     private const TABLE_CALCULATED_ROUTES = 'calculated_routes';
     private const TABLE_BFS_ROUTES = 'bfs_routes';

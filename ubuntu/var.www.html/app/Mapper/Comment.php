@@ -3,7 +3,7 @@ namespace Htec\Mapper;
 
 use Htec\Mapper;
 
-final class Comment extends Mapper
+class Comment extends Mapper
 {
     protected string $table = 'comments';
 

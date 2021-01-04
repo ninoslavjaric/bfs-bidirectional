@@ -3,9 +3,14 @@ namespace Htec\Service;
 
 use Htec\Contract\Importable;
 use Htec\Service;
+use Htec\Traits\Service\CityServiceTrait;
+use Htec\Traits\Service\CountryServiceTrait;
 
-final class Airport extends Service implements Importable
+class Airport extends Service implements Importable
 {
+    use CountryServiceTrait;
+    use CityServiceTrait;
+
     public function getImportItemStructure(): array
     {
         return [
@@ -46,8 +51,8 @@ final class Airport extends Service implements Importable
 
     protected function beforeCreate(array &$data): void
     {
-        $countryService = Country::getInstance();
-        $cityService = City::getInstance();
+        $countryService = $this->getCountryService();
+        $cityService = $this->getCityService();
 
         $countryRecords = [
             'name' => $data['country']

@@ -3,7 +3,7 @@ namespace Htec\Mapper;
 
 use Htec\Mapper;
 
-final class City extends Mapper
+class City extends Mapper
 {
     protected const SELECT_PATTERN = 'SELECT %s FROM %s %s';
 
@@ -18,14 +18,7 @@ final class City extends Mapper
         ];
     }
 
-    public function findRowByWhere($where, $joins = [], $order = [])
-    {
-        $joins[] = ['countries', 'country_id'];
-        return parent::findRowByWhere($where, $joins, $order);
-    }
-
-
-    public function findByWhere($where, $joins = [], $order = [], $limit = 0)
+    private function prepareSqlParams($where, $limit = 0): string
     {
         $where = $this->prepareParamsForQuery($where);
         $conditionPlaceHolders = [];
@@ -41,12 +34,33 @@ final class City extends Mapper
 
         $selectColumns = implode(', ', $this->getColumns());
 
-        $sql = sprintf(
+        $joins = [
+            'JOIN countries ON countries.id = country_id',
+            'LEFT JOIN comments ON comments.city_id = cities.id',
+        ];
+
+        $joins = implode(' ', $joins);
+
+        $limitSql = $limit > 0 ? "LIMIt {$limit}" : '';
+
+        return sprintf(
             static::SELECT_PATTERN,
             $selectColumns,
-            $this->table,
-            "JOIN countries ON countries.id = country_id {$whereSql} ORDER BY countryName",
+            $this->getTable(),
+            "{$joins} {$whereSql} GROUP BY {$this->getTable()}.id ORDER BY country_name {$limitSql}",
         );
+    }
+
+    public function findRowByWhere($where, $joins = [], $order = [])
+    {
+        $sql = $this->prepareSqlParams($where, 1);
+
+        return parent::fetchRow($sql);
+    }
+
+    public function findByWhere($where, $joins = [], $order = [], $limit = 0)
+    {
+        $sql = $this->prepareSqlParams($where, $limit);
 
         return parent::fetch($sql);
     }
@@ -60,7 +74,8 @@ final class City extends Mapper
     {
         $selectSql = parent::getColumns();
 
-        $selectSql[] = "countries.name as countryName";
+        $selectSql[] = "countries.name as country_name";
+        $selectSql[] = "CONCAT('[', GROUP_CONCAT(JSON_QUOTE(comments.text) SEPARATOR ','), ']') AS comments";
 
         return $selectSql;
     }

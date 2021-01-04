@@ -3,7 +3,7 @@ namespace Htec\Service;
 
 use Htec\Service;
 
-final class Country extends Service
+class Country extends Service
 {
 
 }

@@ -6,8 +6,6 @@ abstract class DbAccessLayer
     protected const SELECT_PATTERN = 'SELECT %s FROM %s %s';
     protected string $table;
 
-    private string $logFile = BASE_DIR . DIRECTORY_SEPARATOR . 'log'. DIRECTORY_SEPARATOR . 'queries.sql';
-
     private \PDO $connection;
 
     abstract public function getColumnsDefinition();
@@ -22,10 +20,6 @@ abstract class DbAccessLayer
             $this->connection = new \PDO(
                 "mysql:dbname={$dbCfg['database']};host={$dbCfg['host']}", $dbCfg['username'], $dbCfg['password']
             );
-
-            if (file_exists($this->logFile)) {
-                unlink($this->logFile);
-            }
         }
 
         return $this->connection;
@@ -110,8 +104,10 @@ abstract class DbAccessLayer
 
         $joinSql = '';
         foreach ($joins as &$join) {
-            list($table, $foreignKey) = $join;
-            $join = "INNER JOIN {$table} ON {$table}.id = {$foreignKey}";
+            @list($table, $remoteColumn, $localColumn) = $join;
+            $localColumn = $localColumn ?? 'id';
+
+            $join = "INNER JOIN {$table} ON {$table}.{$localColumn} = {$remoteColumn}";
         }
 
         if (!empty($joins)) {
@@ -141,6 +137,12 @@ abstract class DbAccessLayer
         $statement = $this->getConnection()->prepare($sql);
         $statement->execute($values);
 
+        list($sqlState, $errDriver, $errMessage) = $statement->errorInfo();
+
+        if ($errMessage) {
+            Logger::logError("[SQLSTATE {$sqlState}] #{$errDriver} : {$errMessage}");
+        }
+
         return $this->getConnection()->lastInsertId();
     }
 
@@ -168,6 +170,12 @@ abstract class DbAccessLayer
 
         $values = array_merge($updateValues, $whereValues);
         $statement->execute($values);
+
+        list($sqlState, $errDriver, $errMessage) = $statement->errorInfo();
+
+        if ($errMessage) {
+            Logger::logError("[SQLSTATE {$sqlState}] #{$errDriver} : {$errMessage}");
+        }
 
         return true;
     }
@@ -200,10 +208,16 @@ abstract class DbAccessLayer
 
     protected function fetchScalar($sql)
     {
-        $sth = $this->getConnection()->prepare($sql);
-        $sth->execute();
+        $statement = $this->getConnection()->prepare($sql);
+        $statement->execute();
 
-        return $sth->fetchColumn();
+        list($sqlState, $errDriver, $errMessage) = $statement->errorInfo();
+
+        if ($errMessage) {
+            Logger::logError("[SQLSTATE {$sqlState}] #{$errDriver} : {$errMessage}");
+        }
+
+        return $statement->fetchColumn();
     }
 
     private function getQueryBuildArrays($record): array
@@ -219,7 +233,6 @@ abstract class DbAccessLayer
     protected function execute($query)
     {
         $this->getConnection()->query($query);
-        file_put_contents($this->logFile, $query . PHP_EOL, FILE_APPEND);
     }
 
     protected function quote($value)

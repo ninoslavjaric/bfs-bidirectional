@@ -1,8 +1,8 @@
 <?php
 return [
-    'host' => 'example',
-    'port' => 'example',
-    'database' => 'example',
-    'username' => 'example',
-    'password' => 'example',
+    'host' => 'hostname_param',
+    'port' => 'port_param',
+    'database' => 'database_param',
+    'username' => 'username_param',
+    'password' => 'password_param',
 ];

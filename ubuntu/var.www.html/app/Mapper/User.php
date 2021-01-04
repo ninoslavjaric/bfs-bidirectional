@@ -3,7 +3,7 @@ namespace Htec\Mapper;
 
 use Htec\Mapper;
 
-final class User extends Mapper
+class User extends Mapper
 {
     protected string $table = 'users';
 

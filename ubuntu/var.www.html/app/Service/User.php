@@ -2,10 +2,14 @@
 namespace Htec\Service;
 
 use Htec\Exception\InvalidParamsException;
+use Htec\Exception\NotFoundException;
 use Htec\Service;
+use Htec\Traits\Service\UserServiceTrait;
 
-final class User extends Service
+class User extends Service
 {
+    use UserServiceTrait;
+
     private const CURRENT_USER_KEY = 'currentUser';
 
     public function getByToken($token)
@@ -27,10 +31,10 @@ final class User extends Service
         $username = $params['username'];
         $password = $params['password'];
 
-        $user = User::getInstance()->getBy('username', $username);
+        $user = $this->getBy('username', $username);
 
         if (empty($user)) {
-            throw new InvalidParamsException('User not found');
+            throw new NotFoundException('User not found');
         }
 
         $password = $this->hashPassword($password, $user['salt']);

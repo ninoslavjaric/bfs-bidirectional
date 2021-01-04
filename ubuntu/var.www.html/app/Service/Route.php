@@ -7,13 +7,35 @@ use Htec\Exception\InvalidParamsException;
 use Htec\Service;
 use Htec\Mapper;
 use Htec\Mapper\Route as RouteMapper;
+use Htec\Traits\Service\AirlineServiceTrait;
+use Htec\Traits\Service\AirportServiceTrait;
+use Htec\Traits\Service\CityServiceTrait;
 
 /**
  * @property RouteMapper $mapper
  */
-final class Route extends Service implements Importable
+class Route extends Service implements Importable
 {
-    private array $routesData = [];
+    use AirportServiceTrait;
+    use CityServiceTrait;
+    use AirlineServiceTrait;
+
+    /**
+     * @param Airport $airportService
+     */
+    public function setAirportService(Airport $airportService): void
+    {
+        $this->airportService = $airportService;
+    }
+
+    /**
+     * @param City $cityService
+     */
+    public function setCityService(City $cityService): void
+    {
+        $this->cityService = $cityService;
+    }
+
 
     public function getImportItemStructure(): array
     {
@@ -34,11 +56,11 @@ final class Route extends Service implements Importable
     public function importData(string $data): void
     {
         $data = explode("\n", trim($data));
-        foreach ($data as &$rowa    ) {
-            $row = str_getcsv($rowa);
+        foreach ($data as &$row) {
+            $row = str_getcsv($row);
             $row = array_combine($this->getImportItemStructure(), $row);
 
-            $airportService = Airport::getInstance();
+            $airportService = $this->getAirportService();
             $sourceAirportData = $airportService->get(['id' => $row['sourceAirportId']]);
             $destinationAirportData = $airportService->get(['id' => $row['destinationAirportId']]);
 
@@ -69,8 +91,9 @@ final class Route extends Service implements Importable
         if (
             filter_var($cityOriginId, FILTER_VALIDATE_INT) === false
             || filter_var($cityDestinationId, FILTER_VALIDATE_INT) === false
+            || $cityOriginId < 1 || $cityDestinationId < 1
         ) {
-            throw new InvalidParamsException('City params must be integer');
+            throw new InvalidParamsException('City params must be integer and positive');
         }
     }
 
@@ -78,7 +101,7 @@ final class Route extends Service implements Importable
     {
         $this->validateCityIds($cityOriginId, $cityDestinationId);
 
-        $airportService = Airport::getInstance();
+        $airportService = $this->getAirportService();
         $originAirports = $airportService->getAll(['cityId' => $cityOriginId]);
         $destinationAirports = $airportService->getAll(['cityId' => $cityDestinationId]);
 
@@ -134,8 +157,8 @@ final class Route extends Service implements Importable
 
     private function getRouteStep($originId, $destinationId)
     {
-        $cityService = City::getInstance();
-        $airportService = Airport::getInstance();
+        $cityService = $this->getCityService();
+        $airportService = $this->getAirportService();
 
         $step = $this->getCheapest([
             'sourceAirportId' => $originId,
@@ -171,7 +194,7 @@ final class Route extends Service implements Importable
 
     protected function beforeCreate(array &$data): void
     {
-        $airlineService = Airline::getInstance();
+        $airlineService = $this->getAirlineService();
 
         $airlineData = $airlineService->get(['id' => $data['airlineId']]);
         if (empty($airlineData)) {

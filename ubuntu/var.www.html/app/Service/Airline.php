@@ -3,6 +3,6 @@ namespace Htec\Service;
 
 use Htec\Service;
 
-final class Airline extends Service
+class Airline extends Service
 {
 }

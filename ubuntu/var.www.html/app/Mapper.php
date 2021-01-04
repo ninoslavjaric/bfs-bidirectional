@@ -54,14 +54,14 @@ abstract class Mapper extends DbAccessLayer
         return parent::findRowByWhere($where, $joins, $order);
     }
 
-    final public function insert(array $data): int
+    public function insert(array $data): int
     {
         $record = $this->generateColumnValueMap($data);
 
         return parent::insert($record);
     }
 
-    final public function update(array $where, array $data): bool
+    public function update(array $where, array $data): bool
     {
         $record = $this->generateColumnValueMap($data);
         $where = $this->generateColumnValueMap($where);
@@ -83,5 +83,10 @@ abstract class Mapper extends DbAccessLayer
         }
 
         return $record;
+    }
+
+    public function delete(int $id)
+    {
+        $this->execute("DELETE FROM {$this->getTable()} WHERE id = {$id}");
     }
 }

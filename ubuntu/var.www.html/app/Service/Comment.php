@@ -4,12 +4,15 @@ namespace Htec\Service;
 use Htec\Core\Request;
 use Htec\Exception\InvalidParamsException;
 use Htec\Service;
+use Htec\Traits\Service\UserServiceTrait;
 
-final class Comment extends Service
+class Comment extends Service
 {
+    use UserServiceTrait;
+
     private function getUserId()
     {
-        $user = User::getInstance()->getByToken(Request::getInstance()->getToken());
+        $user = $this->getUserService()->getByToken(Request::getInstance()->getToken());
 
         return $user['id'];
     }

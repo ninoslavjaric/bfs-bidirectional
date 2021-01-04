@@ -13,6 +13,7 @@ abstract class Controller
     protected const ACCESS_LEVEL_ADMIN = 'admin';
 
     static protected array $endpointAccessScopeMap;
+    static public string $errorMessage = 'Something went wrong';
 
     protected Request $request;
 
@@ -80,7 +81,7 @@ abstract class Controller
 
     final public function errorAction()
     {
-        return $this->getErrorResponse('Something went wrong');
+        return $this->getErrorResponse(self::$errorMessage);
     }
 
     private function getResponse(string $message, array $data, bool $success, int $statusCode = 200): JsonResponse

@@ -36,7 +36,13 @@ final class Logger
 
     private static function log($message, $type)
     {
-        return error_log(sprintf('%s: [%s] - session: %s', $type, $message, self::getIdentifier()));
+        $result = false;
+
+        if (!defined('UNITTEST') || !UNITTEST) {
+            $result = error_log(sprintf('%s: [%s] - session: %s', $type, $message, self::getIdentifier()));
+        }
+
+        return $result;
     }
 
 }

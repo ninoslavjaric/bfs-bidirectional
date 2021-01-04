@@ -15,10 +15,15 @@ abstract class Service
 
     private static array $requestScopeData = [];
 
-    final protected function __construct()
+    final public function __construct()
     {
         $mapperClass = str_replace('Service', 'Mapper', static::class);
-        $this->mapper = new $mapperClass();
+        $this->setMapper(new $mapperClass());
+    }
+
+    final public function setMapper(Mapper $mapper): void
+    {
+        $this->mapper = $mapper;
     }
 
     final private function validateWhere(array $where): void
@@ -54,13 +59,7 @@ abstract class Service
 
     public function getBy($field, $value): array
     {
-        if (!in_array($field, $this->getFields())) {
-            throw new \Exception("Table {$this->mapper->getTable()} has no field {$field}");
-        }
-
-        $result = $this->mapper->findRowBy($field, $value) ?: [];
-
-        return $this->generateDataKeyValueMap($result);
+        return $this->get([$field => $value]);
     }
 
     final private function getFields()

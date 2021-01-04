@@ -1,0 +1,23 @@
+version: "3"
+services:
+  mysql:
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    command: "--sql-mode=''"
+    volumes:
+      - "./mysql/var.lib.mysql:/var/lib/mysql"
+    env_file:
+      - ".env"
+    container_name: htec_mysql
+  ubuntu:
+    build:
+      context: ./ubuntu
+    volumes:
+      - "./ubuntu/var.www.html:/var/www/html"
+      - "./ubuntu/etc.apache2.sites-available:/etc/apache2/sites-available"
+    env_file:
+      - ".env"
+    ports:
+      - "8080:80"
+    container_name: htec_webapp

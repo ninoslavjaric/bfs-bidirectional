@@ -3,7 +3,7 @@ namespace Htec\Mapper;
 
 use Htec\Mapper;
 
-final class Airport extends Mapper
+class Airport extends Mapper
 {
     protected string $table = 'airports';
 

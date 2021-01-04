@@ -3,7 +3,7 @@ namespace Htec\Mapper;
 
 use Htec\Mapper;
 
-final class Country extends Mapper
+class Country extends Mapper
 {
     protected string $table = 'countries';
 

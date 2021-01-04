@@ -4,7 +4,7 @@ namespace Htec\Mapper;
 use Htec\Core\Validator;
 use Htec\Mapper;
 
-final class Airline extends Mapper
+class Airline extends Mapper
 {
     protected string $table = 'airlines';
 

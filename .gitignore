@@ -1,0 +1,7 @@
+.idea
+*.iml
+mysql/var.lib.mysql
+ubuntu/var.www.html/log
+**/*.local.php
+**/*.env
+vendor

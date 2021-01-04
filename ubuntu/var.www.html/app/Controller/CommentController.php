@@ -5,9 +5,12 @@ use Htec\Controller;
 use Htec\Core\JsonResponse;
 use Htec\Exception\InvalidParamsException;
 use Htec\Service\Comment;
+use Htec\Traits\Service\CommentServiceTrait;
 
 final class CommentController extends Controller
 {
+    use CommentServiceTrait;
+
     static public function getEndpointAccessScope(): array
     {
         return [
@@ -20,18 +23,18 @@ final class CommentController extends Controller
     public function postCreateAction(): JsonResponse
     {
         try {
-            $commentData = Comment::getInstance()->create($this->request->getParams());
+            $commentData = $this->getCommentService()->create($this->request->getParams());
             return $this->getSuccessResponse("Comment created ", $commentData);
         } catch (\Exception $e) {
-            return $this->getErrorResponse("Import not successful");
+            return $this->getErrorResponse("Comment not created");
         }
     }
 
     public function postUpdateAction(): JsonResponse
     {
         try {
-            $commentData = Comment::getInstance()->edit($this->request->getParams());
-            return $this->getSuccessResponse("Comment created ", $commentData);
+            $commentData = $this->getCommentService()->edit($this->request->getParams());
+            return $this->getSuccessResponse("Comment updated ", $commentData);
         } catch (InvalidParamsException $e) {
             return $this->getErrorResponse($e->getMessage());
         } catch (\Exception $e) {
@@ -42,7 +45,7 @@ final class CommentController extends Controller
     public function deleteDeleteAction(): JsonResponse
     {
         try {
-            Comment::getInstance()->delete($this->request->getParam('id'));
+            $this->getCommentService()->delete($this->request->getParam('id'));
             return $this->getSuccessResponse("Comment deleted ");
         } catch (InvalidParamsException $e) {
             return $this->getErrorResponse($e->getMessage());

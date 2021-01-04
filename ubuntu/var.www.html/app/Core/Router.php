@@ -74,22 +74,18 @@ final class Router
         if (!method_exists($controller, $method)) {
             $this->handleRoutingErrors("Controller {$controller} doesn't have method {$method}", $action);
         }
-//
-//        $endpoints = $controller::getEndpointAccessScopeMap();
 
         if ($message = $controller::checkPermission($action)) {
+            Controller::$errorMessage = $message;
             $this->handleRoutingErrors($message, $action);
         }
-
-//        if (!array_key_exists($action, $endpoints)) {
-//            $this->handleRoutingErrors("Controller {$controller} doesn't have endpoint {$action}", $action);
-//        }
 
         $method = $action . 'Action';
 
         if ($action != 'error' && !$this->validatePathParams($pathParams, $controller, $method)) {
             $httpPath = Request::getInstance()->getPath();
-            $this->handleRoutingErrors("Path {$httpPath} not valid.", $action);
+            Controller::$errorMessage = "Path {$httpPath} not valid.";
+            $this->handleRoutingErrors(Controller::$errorMessage, $action);
             $method = $action . 'Action';
         }
 
